@@ -9,13 +9,17 @@ class JobApplicationInfo {
   @HiveField(1)
   final String position;
 
-//  Range salary;
-
-  // TODO: make whenApplied final
   @HiveField(2)
   final DateTime whenApplied;
   @HiveField(3)
   final DateTime whenAnswered;
+
+  /*
+    TODO: Add fields following fields:
+     (1) salary interval,
+     (2) vacancy source,
+     (3) got the offer?
+   */
 
   JobApplicationInfo(this.companyName, this.position, this.whenApplied,
       this.whenAnswered);

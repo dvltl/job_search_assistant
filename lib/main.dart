@@ -9,11 +9,11 @@ import 'package:path_provider/path_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  var locale = ui.window.locale.toString();
+  initializeDateFormatting(locale);
   final appDocsDirectory = await getApplicationDocumentsDirectory();
   Hive.init(appDocsDirectory.path);
   Hive.registerAdapter(JobApplicationInfoAdapter());
-  var locale = ui.window.locale.toString();
-  initializeDateFormatting(locale);
   runApp(Assistant(locale));
 }
 
@@ -45,7 +45,7 @@ class AssistantState extends State<Assistant> {
             else
               return JobApplicationsPage(_boxName, _locale);
           } else
-            return Scaffold();
+            return Scaffold(body: CircularProgressIndicator(),);
         },
       ),
       theme: ThemeData.dark(),

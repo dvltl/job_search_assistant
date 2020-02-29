@@ -5,6 +5,8 @@ import 'package:job_search_assistant/models/job_application_info.dart';
 class AssistantIOHelper {
   final String _boxName;
 
+  static final int invalidIndex = -1;
+
   AssistantIOHelper(this._boxName) {
     if (!Hive.box(_boxName).isOpen) {
       Hive.openBox(_boxName);
@@ -14,6 +16,11 @@ class AssistantIOHelper {
   void addInfo(JobApplicationInfo info) async {
     Box infoBox = Hive.box(_boxName);
     await infoBox.add(info);
+  }
+
+  void updateInfo(JobApplicationInfo info, int index) async {
+    Box infoBox = Hive.box(_boxName);
+    await infoBox.putAt(index, info);
   }
 
   JobApplicationInfo getAt(int index) {
