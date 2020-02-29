@@ -9,9 +9,8 @@ The application's purposes are:
 * to notify you during the day if you have not added the set amount of applications.
 
 ### Supported feature
-* Information about the job applications can be added and viewed in full detail.
+* Information about the job applications can be added, viewed and updated.
 * This information is stored in the persistent storage on the device.
 
 ### Not (yet) supported features
-* Existing information editing will be supported soon.
 * Notifications will be added soon.
