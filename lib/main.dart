@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:job_search_assistant/app_theme/app_theme_data.dart';
 import 'package:job_search_assistant/job_applications_page.dart';
 import 'package:job_search_assistant/models/job_application_info.dart';
 import 'package:path_provider/path_provider.dart';
@@ -48,7 +49,7 @@ class AssistantState extends State<Assistant> {
             return Scaffold(body: CircularProgressIndicator(),);
         },
       ),
-      theme: ThemeData.dark(),
+      theme: AppThemeData.getData(),
     );
   }
 

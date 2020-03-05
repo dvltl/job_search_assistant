@@ -21,7 +21,6 @@ class JobApplicationsPage extends StatelessWidget {
       body: _getMainPage(),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        backgroundColor: Colors.blueGrey,
         onPressed: () {
           _pushAddAppInfo(context);
         },

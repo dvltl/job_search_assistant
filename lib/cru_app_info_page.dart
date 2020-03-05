@@ -1,8 +1,8 @@
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:job_search_assistant/app_theme/app_theme_data.dart';
 import 'package:job_search_assistant/utils/assistant_io_helper.dart';
-import 'package:job_search_assistant/utils/beautiful_input.dart';
 import 'package:job_search_assistant/utils/info_helper.dart';
 
 // Create-Read-Update Application Info Page
@@ -39,7 +39,8 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
     _formWrappers[FieldType.string] = (fieldName, required, initialVal) {
       return TextFormField(
         controller: TextEditingController(text: initialVal),
-        decoration: BeautifulInputDecoration(fieldName),
+        decoration: InputDecoration(labelText: fieldName),
+        keyboardType: TextInputType.text,
         readOnly: !_inEditMode(),
         validator: (value) {
           if (required && value.isEmpty) {
@@ -56,7 +57,7 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
     _formWrappers[FieldType.date] = (fieldName, required, initialVal) {
       return DateTimeField(
         format: new DateFormat('dd.MM.yyyy', _locale),
-        decoration: BeautifulInputDecoration(fieldName),
+        decoration: InputDecoration(labelText: fieldName),
         initialValue: initialVal,
         resetIcon: _inEditMode() ? Icon(Icons.clear) : null,
         onShowPicker: (context, currentValue) async {
@@ -180,7 +181,6 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
 
   RaisedButton _getSubmitButton(GlobalKey<FormState> formKey) {
     return RaisedButton(
-      color: Colors.blueGrey,
       onPressed: () {
         // Validate will return true if the form is valid, or false if
         // the form is invalid.
@@ -205,7 +205,7 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
 
   RaisedButton _getCancelButton(GlobalKey<FormState> formKey) {
     return RaisedButton(
-      color: Colors.deepOrangeAccent,
+      color: AppThemeData.cancelColor(),
       onPressed: () {
         formKey.currentState.reset();
         _exitEditMode();
