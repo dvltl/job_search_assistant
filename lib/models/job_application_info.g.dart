@@ -17,17 +17,19 @@ class JobApplicationInfoAdapter extends TypeAdapter<JobApplicationInfo> {
       for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return JobApplicationInfo(
-      fields[0] as String,
-      fields[1] as String,
-      fields[2] as DateTime,
-      fields[3] as DateTime,
+      companyName: fields[0] as String,
+      position: fields[1] as String,
+      whenApplied: fields[2] as DateTime,
+      whenAnswered: fields[3] as DateTime,
+      source: fields[4] as String,
+      interviewRes: fields[5] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, JobApplicationInfo obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.companyName)
       ..writeByte(1)
@@ -35,6 +37,10 @@ class JobApplicationInfoAdapter extends TypeAdapter<JobApplicationInfo> {
       ..writeByte(2)
       ..write(obj.whenApplied)
       ..writeByte(3)
-      ..write(obj.whenAnswered);
+      ..write(obj.whenAnswered)
+      ..writeByte(4)
+      ..write(obj.source)
+      ..writeByte(5)
+      ..write(obj.interviewRes);
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 part 'job_application_info.g.dart';
@@ -14,13 +15,24 @@ class JobApplicationInfo {
   @HiveField(3)
   final DateTime whenAnswered;
 
+  @HiveField(4)
+  final String source;
+
+  // 'No results yet' (default), 'No offer', 'Accepted offer', 'Rejected offer'
+  @HiveField(5)
+  final String interviewRes;
+
   /*
-    TODO: Add fields following fields:
+    TODO: Add following fields:
      (1) salary interval,
-     (2) vacancy source,
-     (3) got the offer?
    */
 
-  JobApplicationInfo(this.companyName, this.position, this.whenApplied,
-      this.whenAnswered);
+  JobApplicationInfo({
+                       @required this.companyName,
+                       @required this.position,
+                       @required this.whenApplied,
+                       @required this.whenAnswered,
+                       @required this.source,
+                       @required this.interviewRes
+                     });
 }

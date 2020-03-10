@@ -10,15 +10,21 @@ class AppThemeData {
     buttonColor: _defaultColor,
     cursorColor: _defaultColor,
     errorColor: _errorColor,
+    buttonTheme: ThemeData
+        .dark()
+        .buttonTheme
+        .copyWith(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
+    ),
     floatingActionButtonTheme:
         ThemeData.dark().floatingActionButtonTheme.copyWith(
-              backgroundColor: _defaultColor,
-            ),
-    inputDecorationTheme: ThemeData.dark().inputDecorationTheme.copyWith(
-          border: OutlineInputBorder(
-              borderRadius: new BorderRadius.circular(25.0),
-              borderSide: new BorderSide()),
+          backgroundColor: _defaultColor,
         ),
+    inputDecorationTheme: ThemeData.dark().inputDecorationTheme.copyWith(
+      border: OutlineInputBorder(
+          borderRadius: getBorderRadius(),
+          borderSide: new BorderSide()),
+    ),
     textSelectionColor: _selectionColor,
     textSelectionHandleColor: _defaultColor,
   );
@@ -26,4 +32,6 @@ class AppThemeData {
   static Color cancelColor() => _errorColor;
 
   static ThemeData getData() => _data;
+
+  static BorderRadius getBorderRadius() => BorderRadius.circular(25.0);
 }

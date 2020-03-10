@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:job_search_assistant/app_theme/app_theme_data.dart';
 import 'package:job_search_assistant/utils/assistant_io_helper.dart';
 import 'package:job_search_assistant/utils/info_helper.dart';
+import 'package:job_search_assistant/utils/source_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Create-Read-Update Application Info Page
 class CRUAppInfoPage extends StatefulWidget {
@@ -33,28 +35,22 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
   final int _index;
 
   bool _editMode;
+  String _curSelectedVal;
 
   CRUAppInfoPageState(
       this._formKey, this._boxName, this._locale, this._index, this._editMode) {
-    _formWrappers[FieldType.string] = (fieldName, required, initialVal) {
-      return TextFormField(
-        controller: TextEditingController(text: initialVal),
-        decoration: InputDecoration(labelText: fieldName),
-        keyboardType: TextInputType.text,
-        readOnly: !_inEditMode(),
-        validator: (value) {
-          if (required && value.isEmpty) {
-            return 'Please enter some text';
-          }
-          return null;
-        },
-        onSaved: (String text) {
-          this._newInfo[fieldName] = text;
-        },
+    _formWrappers[FieldType.string] =
+        (String fieldName, bool required, String initialVal) {
+      return _getTextFormField(
+        fieldName: fieldName,
+        required: required,
+        editModeOn: !_inEditMode(),
+        initialVal: initialVal,
       );
     };
 
-    _formWrappers[FieldType.date] = (fieldName, required, initialVal) {
+    _formWrappers[FieldType.date] =
+        (String fieldName, bool required, DateTime initialVal) {
       return DateTimeField(
         format: new DateFormat('dd.MM.yyyy', _locale),
         decoration: InputDecoration(labelText: fieldName),
@@ -72,7 +68,7 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
           }
         },
         onSaved: (DateTime value) {
-          this._newInfo[fieldName] = value != null ? value.toString() : '';
+          _newInfo[fieldName] = value != null ? value.toString() : '';
         },
         validator: (value) {
           if (required && (value == null)) {
@@ -82,12 +78,117 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
         },
       );
     };
+
+    _formWrappers[FieldType.interviewRes] =
+        (String fieldName, bool required, String initialVal) {
+      var values = JobAppInfoHelper.validInterviewResValues();
+      _curSelectedVal = _curSelectedVal ?? (initialVal ?? values[0]);
+      Widget result;
+
+      if ( _inEditMode() ) {
+        Iterable<DropdownMenuItem> items = values.map((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList();
+        result = DropdownButtonFormField(
+          value: _curSelectedVal,
+          decoration: InputDecoration(labelText: fieldName),
+          items: items,
+          onChanged: (String newVal) {
+            // TODO: find another solution
+            // because it resets changes to other fields
+            setState(() {
+              _curSelectedVal = newVal;
+            });
+          },
+          onSaved: (String newVal) {
+            _newInfo[fieldName] = newVal;
+          },
+        );
+      } else {
+        result = TextField(
+          controller: TextEditingController(
+              text: _curSelectedVal
+          ),
+          decoration: InputDecoration(labelText: fieldName),
+          readOnly: true,
+        );
+      }
+
+      return result;
+    };
+
+    _formWrappers[FieldType.source] =
+        (String fieldName, bool required, String initialVal) {
+      var source = SourceView.fromString(initialVal);
+      var nameField = JobAppInfoHelper.sourceName;
+      var linkField = JobAppInfoHelper.sourceLink;
+
+      if ( _inEditMode() ) {
+        return Row(
+          children: <Widget>[
+            Expanded(
+              child: _getTextFormField(
+                fieldName: nameField,
+                required: false,
+                editModeOn: !_inEditMode(),
+                initialVal: source.getName(),
+              ),
+            ),
+            Expanded(
+                child: _getTextFormField(
+                  fieldName: linkField,
+                  required: false,
+                  editModeOn: !_inEditMode(),
+                  initialVal: source.getLink(),
+                )
+            ),
+          ],
+        );
+      } else if ( source != null && source
+          .getName()
+          .isNotEmpty ) {
+        return RaisedButton(
+          child: Text('Go to source: ' + source.getName()),
+          onPressed: () {
+            _launchUrl(source.getLink());
+          },
+        );
+      } else {
+        return TextField(
+          controller: TextEditingController(text: 'No source provided'),
+          decoration: InputDecoration(labelText: fieldName),
+          readOnly: true,
+        );
+      }
+    };
+  }
+
+  TextFormField _getTextFormField({String fieldName, bool required,
+                                    bool editModeOn, String initialVal}) {
+    return TextFormField(
+      controller: TextEditingController(text: initialVal),
+      decoration: InputDecoration(labelText: fieldName),
+      keyboardType: TextInputType.text,
+      readOnly: editModeOn,
+      validator: (value) {
+        if ( required && value.isEmpty ) {
+          return 'Please enter ' + fieldName.toLowerCase();
+        }
+        return null;
+      },
+      onSaved: (String text) {
+        this._newInfo[fieldName] = text;
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     _newInfo.clear();
-    Iterable<Widget> formFields = _getFormWidgetFields(_formKey);
+    var formFields = _getFormWidgetFields(_formKey);
 
     return Scaffold(
       appBar: AppBar(
@@ -98,10 +199,9 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
           key: _formKey,
           child: Padding(
             padding: const EdgeInsets.all(10.0),
-            child: Column(
-              children: formFields,
-            ),
-          )),
+            child: formFields,
+          )
+      ),
     );
   }
 
@@ -133,7 +233,7 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
     return Text(message);
   }
 
-  Iterable<Widget> _getFormWidgetFields(GlobalKey<FormState> formKey) {
+  ListView _getFormWidgetFields(GlobalKey<FormState> formKey) {
     List<Widget> fields = <Widget>[];
     Map<String, Object> infoMap;
 
@@ -143,6 +243,15 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
     }
 
     for (var fieldInfo in JobAppInfoHelper.getFieldsInfo()) {
+      if ( _index == AssistantIOHelper.invalidIndex
+          && fieldInfo.fieldType == FieldType.interviewRes ) {
+        /*
+        For now it clears all of the changes to the fields, so skip it during
+        the creation of job application information. It can be edited afterward.
+        This is done to minimize input data loss and user annoyance.
+         */
+        continue;
+      }
       Function initWrapper = _formWrappers[fieldInfo.fieldType];
       if (initWrapper != null) {
         var initVal;
@@ -150,9 +259,11 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
           initVal = infoMap[fieldInfo.fieldName];
         }
         Widget toAdd =
-            initWrapper(fieldInfo.fieldName, fieldInfo.required, initVal);
+        initWrapper(fieldInfo.fieldName, fieldInfo.required, initVal);
         fields.add(toAdd);
-        fields.add(new Padding(padding: EdgeInsets.all(4.0)));
+        if ( toAdd != null ) {
+          fields.add(new Padding(padding: EdgeInsets.all(4.0)));
+        }
       }
     }
 
@@ -162,10 +273,20 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
           child: Center(
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: _getModeDependentButtons(formKey)))));
+                  children: _getModeDependentButtons(formKey)
+              )
+          )
+      ));
     }
 
-    return fields;
+    fields.removeWhere((element) => (element == null));
+
+    return ListView.builder(
+        itemCount: fields.length,
+        itemBuilder: (context, i) {
+          return fields[i];
+        }
+    );
   }
 
   List<Widget> _getModeDependentButtons(GlobalKey<FormState> formKey) {
@@ -208,6 +329,7 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
       color: AppThemeData.cancelColor(),
       onPressed: () {
         formKey.currentState.reset();
+        _curSelectedVal = null;
         _exitEditMode();
       },
       child: Text('Cancel'),
@@ -228,5 +350,39 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
     setState(() {
       this._editMode = false;
     });
+  }
+
+  void _launchUrl(String link) async {
+    try {
+      if ( await canLaunch(link) ) {
+        await launch(
+          link, forceWebView: true,
+          enableJavaScript: true,
+        );
+      } else {
+        throw 'Couldn\'t launch $link';
+      }
+    } catch ( exception ) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Couldn\' open $link'),
+            content: Text('Please check whether the link is correct'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+            shape: RoundedRectangleBorder(
+                borderRadius: AppThemeData.getBorderRadius()),
+          );
+        },
+        barrierDismissible: true,
+      );
+    }
   }
 }
