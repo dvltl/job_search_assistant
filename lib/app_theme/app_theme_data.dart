@@ -1,35 +1,40 @@
 import 'package:flutter/material.dart';
 
 class AppThemeData {
-  static const Color _defaultColor = Colors.blueAccent;
-  static const Color _errorColor = Colors.deepOrangeAccent;
-  static const Color _selectionColor = Colors.blueGrey;
+  static const Color _primaryColor = Color(0xFF04273D);
+  static const Color _accentColor = Color(0xFF3E5C76);
+  static const Color _errorColor = Color(0xFF4C2B36);
+  static const Color _selectionColor = Color(0xFF748CAB);
+  static const Color _backgroundColor = Color(0xFF202C39);
 
   static ThemeData _data = ThemeData.dark().copyWith(
-    accentColor: _defaultColor,
-    buttonColor: _defaultColor,
-    cursorColor: _defaultColor,
+    primaryColor: _primaryColor,
+    accentColor: _accentColor,
+    buttonColor: _accentColor,
+    backgroundColor: _backgroundColor,
+    cursorColor: _accentColor,
     errorColor: _errorColor,
+    scaffoldBackgroundColor: _backgroundColor,
     buttonTheme: ThemeData
         .dark()
         .buttonTheme
         .copyWith(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      buttonColor: _accentColor,
     ),
     floatingActionButtonTheme:
         ThemeData.dark().floatingActionButtonTheme.copyWith(
-          backgroundColor: _defaultColor,
+          backgroundColor: _accentColor,
         ),
     inputDecorationTheme: ThemeData.dark().inputDecorationTheme.copyWith(
       border: OutlineInputBorder(
           borderRadius: getBorderRadius(),
-          borderSide: new BorderSide()),
+          borderSide: new BorderSide(width: 1.5)
+      ),
     ),
     textSelectionColor: _selectionColor,
-    textSelectionHandleColor: _defaultColor,
+    textSelectionHandleColor: _accentColor,
   );
-
-  static Color cancelColor() => _errorColor;
 
   static ThemeData getData() => _data;
 

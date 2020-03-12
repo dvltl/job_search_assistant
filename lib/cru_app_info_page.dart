@@ -1,7 +1,6 @@
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:job_search_assistant/app_theme/app_theme_data.dart';
 import 'package:job_search_assistant/utils/assistant_io_helper.dart';
 import 'package:job_search_assistant/utils/info_helper.dart';
 import 'package:job_search_assistant/utils/source_view.dart';
@@ -198,7 +197,7 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
       body: Form(
           key: _formKey,
           child: Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(12.0),
             child: formFields,
           )
       ),
@@ -313,11 +312,10 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
 
           if (_index != AssistantIOHelper.invalidIndex) {
             ioHelper.updateInfo(info, _index);
-            _exitEditMode();
           } else {
             ioHelper.addInfo(info);
-            Navigator.pop(context);
           }
+          Navigator.pop(context);
         }
       },
       child: Text('Submit'),
@@ -326,11 +324,12 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
 
   RaisedButton _getCancelButton(GlobalKey<FormState> formKey) {
     return RaisedButton(
-      color: AppThemeData.cancelColor(),
+      color: Theme
+          .of(context)
+          .errorColor,
       onPressed: () {
         formKey.currentState.reset();
         _curSelectedVal = null;
-        _exitEditMode();
       },
       child: Text('Cancel'),
     );
@@ -377,8 +376,6 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
                 },
               ),
             ],
-            shape: RoundedRectangleBorder(
-                borderRadius: AppThemeData.getBorderRadius()),
           );
         },
         barrierDismissible: true,

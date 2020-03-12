@@ -16,6 +16,8 @@ class JobAppInfoHelper {
     'No results yet', 'No offer', 'Accepted offer', 'Rejected offer'
   ];
 
+  static String defaultRes() => _validResValues[0];
+
   static Iterable<FieldInfo> getFieldsInfo() {
     return <FieldInfo>[
       FieldInfo(_companyKey, FieldType.string, true),

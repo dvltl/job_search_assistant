@@ -3,8 +3,8 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:job_search_assistant/cru_app_info_page.dart';
 import 'package:job_search_assistant/models/job_application_info.dart';
+import 'package:job_search_assistant/utils/app_info_tile.dart';
 import 'package:job_search_assistant/utils/assistant_io_helper.dart';
-import 'package:job_search_assistant/utils/date_string_formatter.dart';
 
 class JobApplicationsPage extends StatelessWidget {
   final String _boxName;
@@ -38,13 +38,15 @@ class JobApplicationsPage extends StatelessWidget {
     );
   }
 
-  Widget _getEmptyApplicationsMessage() {
+  Widget _getEmptyApplicationsMessage(BuildContext context) {
     return Center(
         child: Container(
           child: Text(
             'There are no saved job applications at the moment',
             style: TextStyle(
-              color: Colors.white30,
+              color: Theme
+                  .of(context)
+                  .accentColor,
               fontSize: 20.0,
             ),
             textAlign: TextAlign.center,
@@ -58,7 +60,7 @@ class JobApplicationsPage extends StatelessWidget {
       valueListenable: Hive.box(_boxName).listenable(),
       builder: (context, jobsBox, child) {
         if ( jobsBox.isEmpty ) {
-          return _getEmptyApplicationsMessage();
+          return _getEmptyApplicationsMessage(context);
         } else {
           return ListView.builder(
             itemCount: 2 * jobsBox.length,
@@ -78,21 +80,44 @@ class JobApplicationsPage extends StatelessWidget {
     AssistantIOHelper ioHelper = AssistantIOHelper(_boxName);
     final JobApplicationInfo info = ioHelper.getAt(index);
 
-    var applicationDateString = _getApplicationDateString(info);
-
-    return ListTile(
-      title: Text(info.position + ' at ' + info.companyName),
-      subtitle: info.whenApplied != null
-          ? Text('Applied at $applicationDateString')
-          : null,
-      onTap: () {
-        _pushAppInfoDetail(context, index);
+    return AppInfoTile(
+      info: info,
+      onPushClear: () {
+        _showDeleteDialog(context, index);
       },
-      trailing: IconButton(
-        icon: Icon(Icons.clear),
-        onPressed: () {
-          _removeAppInfo(index);
-        },
+      onPushEdit: () {
+        _pushEditAppInfo(context, index);
+      },
+      cellSize: Size(MediaQuery
+          .of(context)
+          .size
+          .width, 110),
+      edgeInsets: EdgeInsets.all(10),
+      animationDuration: Duration(milliseconds: 200),
+      borderRadius: 10,
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      child: AlertDialog(
+        title: Text('Remove the vacancy?'),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Yes'),
+            onPressed: () {
+              _removeAppInfo(index);
+              Navigator.of(context).pop();
+            },
+          ),
+          FlatButton(
+            child: Text('No'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
       ),
     );
   }
@@ -110,15 +135,10 @@ class JobApplicationsPage extends StatelessWidget {
     }));
   }
 
-  void _pushAppInfoDetail(BuildContext context, int index) {
+  void _pushEditAppInfo(BuildContext context, int index) {
     Navigator.push(context,
         MaterialPageRoute<void>(builder: (BuildContext context) {
-          return CRUAppInfoPage(_boxName, _locale, index, false);
-          //return AppInfoDetailsPage(_boxName, index, _locale);
+          return CRUAppInfoPage(_boxName, _locale, index, true);
     }));
-  }
-
-  String _getApplicationDateString(JobApplicationInfo info) {
-    return DateStringFormatter.getDateAsString(info.whenApplied);
   }
 }
