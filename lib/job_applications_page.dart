@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:job_search_assistant/cru_app_info_page.dart';
+import 'package:job_search_assistant/cu_app_info_page.dart';
 import 'package:job_search_assistant/models/job_application_info.dart';
 import 'package:job_search_assistant/utils/app_info_tile.dart';
 import 'package:job_search_assistant/utils/assistant_io_helper.dart';
@@ -130,15 +130,15 @@ class JobApplicationsPage extends StatelessWidget {
   void _pushAddAppInfo(BuildContext context) {
     Navigator.push(context,
         MaterialPageRoute<void>(builder: (BuildContext context) {
-          return CRUAppInfoPage(
-              _boxName, _locale, AssistantIOHelper.invalidIndex, true);
+          return CUAppInfoPage(
+              _boxName, _locale, AssistantIOHelper.invalidIndex);
     }));
   }
 
   void _pushEditAppInfo(BuildContext context, int index) {
     Navigator.push(context,
         MaterialPageRoute<void>(builder: (BuildContext context) {
-          return CRUAppInfoPage(_boxName, _locale, index, true);
+          return CUAppInfoPage(_boxName, _locale, index);
     }));
   }
 }

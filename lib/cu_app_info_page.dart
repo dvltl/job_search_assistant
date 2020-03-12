@@ -4,46 +4,38 @@ import 'package:intl/intl.dart';
 import 'package:job_search_assistant/utils/assistant_io_helper.dart';
 import 'package:job_search_assistant/utils/info_helper.dart';
 import 'package:job_search_assistant/utils/source_view.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 // Create-Read-Update Application Info Page
-class CRUAppInfoPage extends StatefulWidget {
+class CUAppInfoPage extends StatefulWidget {
   final String _boxName;
   final String _locale;
   final int _index;
-  final _formKey = GlobalKey<FormState>();
-  final bool _editMode;
 
-  CRUAppInfoPage(this._boxName, this._locale, index, editing)
-      : this._index = index ?? -1,
-        this._editMode = editing ?? false;
+  CUAppInfoPage(this._boxName, this._locale, index) : this._index = index ?? -1;
 
   @override
   State<StatefulWidget> createState() =>
-      CRUAppInfoPageState(_formKey, _boxName, _locale, _index, _editMode);
+      CUAppInfoPageState(_boxName, _locale, _index);
 }
 
-class CRUAppInfoPageState extends State<CRUAppInfoPage> {
+class CUAppInfoPageState extends State<CUAppInfoPage> {
   // All of the form fields return their values as Strings
   final Map<String, String> _newInfo = Map();
   final Map<FieldType, Function> _formWrappers = Map();
 
   final String _boxName;
-  final _formKey;
   final String _locale;
   final int _index;
+  final _formKey = GlobalKey<FormState>();
 
-  bool _editMode;
   String _curSelectedVal;
 
-  CRUAppInfoPageState(
-      this._formKey, this._boxName, this._locale, this._index, this._editMode) {
+  CUAppInfoPageState(this._boxName, this._locale, this._index) {
     _formWrappers[FieldType.string] =
         (String fieldName, bool required, String initialVal) {
       return _getTextFormField(
         fieldName: fieldName,
-        required: required,
-        editModeOn: !_inEditMode(),
+        requiredField: required,
         initialVal: initialVal,
       );
     };
@@ -54,17 +46,13 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
         format: new DateFormat('dd.MM.yyyy', _locale),
         decoration: InputDecoration(labelText: fieldName),
         initialValue: initialVal,
-        resetIcon: _inEditMode() ? Icon(Icons.clear) : null,
+        resetIcon: Icon(Icons.clear),
         onShowPicker: (context, currentValue) async {
-          if (!_inEditMode()) {
-            return null;
-          } else {
-            return showDatePicker(
-                context: context,
-                initialDate: currentValue ?? DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime(2100));
-          }
+          return showDatePicker(
+              context: context,
+              initialDate: currentValue ?? DateTime.now(),
+              firstDate: DateTime(1900),
+              lastDate: DateTime(2100));
         },
         onSaved: (DateTime value) {
           _newInfo[fieldName] = value != null ? value.toString() : '';
@@ -81,40 +69,31 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
     _formWrappers[FieldType.interviewRes] =
         (String fieldName, bool required, String initialVal) {
       var values = JobAppInfoHelper.validInterviewResValues();
-      _curSelectedVal = _curSelectedVal ?? (initialVal ?? values[0]);
+      _curSelectedVal = _curSelectedVal ??
+          (initialVal ?? JobAppInfoHelper.defaultRes());
       Widget result;
 
-      if ( _inEditMode() ) {
-        Iterable<DropdownMenuItem> items = values.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList();
-        result = DropdownButtonFormField(
-          value: _curSelectedVal,
-          decoration: InputDecoration(labelText: fieldName),
-          items: items,
-          onChanged: (String newVal) {
-            // TODO: find another solution
-            // because it resets changes to other fields
-            setState(() {
-              _curSelectedVal = newVal;
-            });
-          },
-          onSaved: (String newVal) {
-            _newInfo[fieldName] = newVal;
-          },
+      Iterable<DropdownMenuItem> items = values.map((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
         );
-      } else {
-        result = TextField(
-          controller: TextEditingController(
-              text: _curSelectedVal
-          ),
-          decoration: InputDecoration(labelText: fieldName),
-          readOnly: true,
-        );
-      }
+      }).toList();
+      result = DropdownButtonFormField(
+        value: _curSelectedVal,
+        decoration: InputDecoration(labelText: fieldName),
+        items: items,
+        onChanged: (String newVal) {
+          // TODO: find another solution
+          // because it resets changes to other fields
+          setState(() {
+            _curSelectedVal = newVal;
+          });
+        },
+        onSaved: (String newVal) {
+          _newInfo[fieldName] = newVal;
+        },
+      );
 
       return result;
     };
@@ -125,55 +104,36 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
       var nameField = JobAppInfoHelper.sourceName;
       var linkField = JobAppInfoHelper.sourceLink;
 
-      if ( _inEditMode() ) {
-        return Row(
-          children: <Widget>[
-            Expanded(
+      return Row(
+        children: <Widget>[
+          Expanded(
+            child: _getTextFormField(
+              fieldName: nameField,
+              requiredField: false,
+              initialVal: source.getName(),
+            ),
+          ),
+          Expanded(
               child: _getTextFormField(
-                fieldName: nameField,
-                required: false,
-                editModeOn: !_inEditMode(),
-                initialVal: source.getName(),
-              ),
-            ),
-            Expanded(
-                child: _getTextFormField(
-                  fieldName: linkField,
-                  required: false,
-                  editModeOn: !_inEditMode(),
-                  initialVal: source.getLink(),
-                )
-            ),
-          ],
-        );
-      } else if ( source != null && source
-          .getName()
-          .isNotEmpty ) {
-        return RaisedButton(
-          child: Text('Go to source: ' + source.getName()),
-          onPressed: () {
-            _launchUrl(source.getLink());
-          },
-        );
-      } else {
-        return TextField(
-          controller: TextEditingController(text: 'No source provided'),
-          decoration: InputDecoration(labelText: fieldName),
-          readOnly: true,
-        );
-      }
+                fieldName: linkField,
+                requiredField: false,
+                initialVal: source.getLink(),
+              )
+          ),
+        ],
+      );
     };
   }
 
-  TextFormField _getTextFormField({String fieldName, bool required,
-                                    bool editModeOn, String initialVal}) {
+  TextFormField _getTextFormField({String fieldName, bool requiredField,
+                                    String initialVal}) {
     return TextFormField(
       controller: TextEditingController(text: initialVal),
       decoration: InputDecoration(labelText: fieldName),
       keyboardType: TextInputType.text,
-      readOnly: editModeOn,
+      readOnly: false,
       validator: (value) {
-        if ( required && value.isEmpty ) {
+        if ( requiredField && value.isEmpty ) {
           return 'Please enter ' + fieldName.toLowerCase();
         }
         return null;
@@ -192,7 +152,6 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
     return Scaffold(
       appBar: AppBar(
         title: _getModeDependentTitle(),
-        actions: _getModeDependentActions(),
       ),
       body: Form(
           key: _formKey,
@@ -204,28 +163,11 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
     );
   }
 
-  List<Widget> _getModeDependentActions() {
-    if (!_inEditMode()) {
-      return <Widget>[
-        IconButton(
-          icon: Icon(Icons.edit),
-          onPressed: () {
-            _enterEditMode();
-          },
-        ),
-      ];
-    } else {
-      return null;
-    }
-  }
-
   Text _getModeDependentTitle() {
     String message;
     String postfix = 'Job Application Info';
     if (_index == AssistantIOHelper.invalidIndex) {
       message = 'Add ' + postfix;
-    } else if (!_inEditMode()) {
-      message = postfix;
     } else {
       message = 'Edit ' + postfix;
     }
@@ -266,17 +208,17 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
       }
     }
 
-    if (_inEditMode()) {
-      fields.add(Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: Center(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: _getModeDependentButtons(formKey)
-              )
-          )
-      ));
-    }
+    fields.add(
+        Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Center(
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: _getModeDependentButtons(formKey)
+                )
+            )
+        )
+    );
 
     fields.removeWhere((element) => (element == null));
 
@@ -333,53 +275,5 @@ class CRUAppInfoPageState extends State<CRUAppInfoPage> {
       },
       child: Text('Cancel'),
     );
-  }
-
-  bool _inEditMode() {
-    return this._editMode;
-  }
-
-  void _enterEditMode() {
-    setState(() {
-      this._editMode = true;
-    });
-  }
-
-  void _exitEditMode() {
-    setState(() {
-      this._editMode = false;
-    });
-  }
-
-  void _launchUrl(String link) async {
-    try {
-      if ( await canLaunch(link) ) {
-        await launch(
-          link, forceWebView: true,
-          enableJavaScript: true,
-        );
-      } else {
-        throw 'Couldn\'t launch $link';
-      }
-    } catch ( exception ) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Couldn\' open $link'),
-            content: Text('Please check whether the link is correct'),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-        barrierDismissible: true,
-      );
-    }
   }
 }
