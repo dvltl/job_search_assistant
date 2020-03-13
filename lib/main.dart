@@ -46,7 +46,13 @@ class AssistantState extends State<Assistant> {
             else
               return JobApplicationsPage(_boxName, _locale);
           } else
-            return Scaffold(body: CircularProgressIndicator(),);
+            return Scaffold(
+                body: Column(
+                  children: <Widget>[
+                    Center(child: CircularProgressIndicator(),)
+                  ],
+                )
+            );
         },
       ),
       theme: AppThemeData.getData(),
