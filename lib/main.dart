@@ -23,15 +23,21 @@ void main() async {
   final notificationManager = NotificationManager(appName: appTitle);
   await notificationManager.init();
 
-  runApp(Assistant(appTitle, locale, notificationManager));
+  runApp(
+      Assistant(
+          appTitle, 'job_applications', 'settings', locale, notificationManager)
+  );
 }
 
 class Assistant extends StatefulWidget {
   final String appName;
+  final String infoBoxName;
+  final String settingsBoxName;
   final String _locale;
   final NotificationManager _notificationManager;
 
-  Assistant(this.appName, this._locale, this._notificationManager);
+  Assistant(this.appName, this.infoBoxName, this.settingsBoxName,
+            this._locale, this._notificationManager);
 
   @override
   State<StatefulWidget> createState() =>
@@ -39,7 +45,6 @@ class Assistant extends StatefulWidget {
 }
 
 class AssistantState extends State<Assistant> {
-  final String _boxName = 'job_applications';
   final String _locale;
   final NotificationManager _notificationManager;
 
@@ -50,20 +55,25 @@ class AssistantState extends State<Assistant> {
     return MaterialApp(
       title: widget.appName,
       home: FutureBuilder(
-        future: Hive.openBox(_boxName),
+        future: openBoxes(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError)
               return Text(snapshot.error.toString());
             else
-              return JobApplicationsPage(
-                  _boxName, _locale, _notificationManager);
+              return JobApplicationsPage(widget.infoBoxName,
+                  widget.settingsBoxName, _locale, _notificationManager);
           } else
             return Scaffold(body: CircularProgressIndicator(),);
         },
       ),
       theme: AppThemeData.getData(),
     );
+  }
+
+  Future<void> openBoxes() async {
+    await Hive.openBox(widget.infoBoxName);
+    await Hive.openBox(widget.settingsBoxName);
   }
 
   @override

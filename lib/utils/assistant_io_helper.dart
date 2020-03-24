@@ -1,43 +1,50 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:job_search_assistant/models/job_application_info.dart';
 
-class AssistantIOHelper {
+class AssistantIOHelper<T> {
   final String _boxName;
 
   static final int invalidIndex = -1;
 
-  AssistantIOHelper(this._boxName) {
-    if (!Hive.box(_boxName).isOpen) {
-      Hive.openBox(_boxName);
-    }
+  AssistantIOHelper(this._boxName);
+
+  Box openBox() => Hive.box(_boxName);
+
+  void addElem(T elem) async {
+    Box infoBox = openBox();
+    await infoBox.add(elem);
   }
 
-  void addInfo(JobApplicationInfo info) async {
-    Box infoBox = Hive.box(_boxName);
-    await infoBox.add(info);
+  void updateElem(T newElem, int index) async {
+    Box infoBox = openBox();
+    await infoBox.putAt(index, newElem);
   }
 
-  void updateInfo(JobApplicationInfo info, int index) async {
-    Box infoBox = Hive.box(_boxName);
-    await infoBox.putAt(index, info);
+  T getAt(int index) {
+    Box infoBox = openBox();
+    return infoBox.getAt(index) as T;
   }
 
-  JobApplicationInfo getAt(int index) {
-    Box infoBox = Hive.box(_boxName);
-    return infoBox.getAt(index) as JobApplicationInfo;
-  }
-
-  void deleteAt(int index) async {
-    Box infoBox = Hive.box(_boxName);
+  Future<void> deleteAt(int index) async {
+    Box infoBox = openBox();
     await infoBox.deleteAt(index);
   }
 
-  getListenable() {
-    return (Hive.box(_boxName)).listenable();
+  ValueListenable getListenable() {
+    return openBox().listenable();
   }
 
   bool isBoxEmpty() {
-    return Hive.box(_boxName).isEmpty;
+    return openBox().isEmpty;
+  }
+
+  Future<void> clear() async {
+    await openBox().clear();
+  }
+
+  Iterable<T> getAll() {
+    var box = openBox();
+    return List<T>.from(box.values);
   }
 }
