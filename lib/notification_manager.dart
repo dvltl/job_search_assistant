@@ -8,7 +8,7 @@ class NotificationManager {
   NotificationManager({@required this.appName}) : assert(appName != null);
 
   Future<void> init() async {
-    var initSettingsAndroid = AndroidInitializationSettings('briefcase_icon');
+    var initSettingsAndroid = AndroidInitializationSettings('app_icon');
     var initSettingsIOS = IOSInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
@@ -19,7 +19,7 @@ class NotificationManager {
     await _notificationsPlugin.initialize(initSettings);
   }
 
-  Future<void> scheduleDailyNotificationAt(TimeOfDay time, int id) async {
+  Future<void> scheduleDailyNotifications(Iterable<TimeOfDay> times) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         '$appName daily channel id',
         '$appName\'s daily notifications',
@@ -30,14 +30,17 @@ class NotificationManager {
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
 
-    var innerTime = Time(time.hour, time.minute);
+    var id = 0;
+    for ( var time in times ) {
+      var innerTime = Time(time.hour, time.minute);
 
-    await _notificationsPlugin.showDailyAtTime(
-        id,
-        '$appName',
-        'Have you made new job applications? Don\'t forget to add them here!',
-        innerTime,
-        platformChannelSpecifics);
+      await _notificationsPlugin.showDailyAtTime(
+          id++,
+          'Have you made new job applications?',
+          'Don\'t forget to add them here!',
+          innerTime,
+          platformChannelSpecifics);
+    }
   }
 
   Future<void> cancelAllNotifications() async {

@@ -22,7 +22,6 @@ class NotificationSettings extends UpdatedWidget {
 
   @override
   void update() {
-    print(_key.currentState == null);
     _key.currentState?.saveSettings();
   }
 }
@@ -121,11 +120,9 @@ class _NotificationTimesChipsState extends State<_NotificationTimesChips> {
   }
 
   void saveSettings() {
-    widget.manager.cancelAllNotifications();
-
-    for (var i = 0; i < _timeChoices.length; ++i) {
-      widget.manager.scheduleDailyNotificationAt(_timeChoices[i], i);
-    }
+    widget.manager.cancelAllNotifications()
+        .then((value) =>
+        widget.manager.scheduleDailyNotifications(_timeChoices));
 
     var ioHelper = AssistantIOHelper<String>(widget.settingsBoxName);
     ioHelper.clear().then((value) => _saveTimeChoices(ioHelper));
