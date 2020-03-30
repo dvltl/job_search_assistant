@@ -1,22 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:job_search_assistant/cu_app_info_page.dart';
 import 'package:job_search_assistant/models/job_application_info.dart';
+import 'package:job_search_assistant/notification_manager.dart';
+import 'package:job_search_assistant/settings_page.dart';
 import 'package:job_search_assistant/utils/app_info_tile.dart';
 import 'package:job_search_assistant/utils/assistant_io_helper.dart';
 
 class JobApplicationsPage extends StatelessWidget {
-  final String _boxName;
+  final String _jobsBoxName;
+  final String _settingsBoxName;
   final String _locale;
+  final NotificationManager _notificationManager;
 
-  JobApplicationsPage(this._boxName, this._locale);
+  JobApplicationsPage(this._jobsBoxName, this._settingsBoxName,
+                      this._locale, this._notificationManager);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Current Job Applications'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              _showSettings(context);
+            },
+          )
+        ],
       ),
       body: _getMainPage(),
       floatingActionButton: FloatingActionButton(
@@ -56,8 +67,9 @@ class JobApplicationsPage extends StatelessWidget {
   }
 
   Widget _buildListView() {
+    var ioHelper = AssistantIOHelper<JobApplicationInfo>(_jobsBoxName);
     return ValueListenableBuilder(
-      valueListenable: Hive.box(_boxName).listenable(),
+      valueListenable: ioHelper.getListenable(),
       builder: (context, jobsBox, child) {
         if ( jobsBox.isEmpty ) {
           return _getEmptyApplicationsMessage(context);
@@ -77,7 +89,7 @@ class JobApplicationsPage extends StatelessWidget {
   }
 
   Widget _buildRow(int index, BuildContext context) {
-    AssistantIOHelper ioHelper = AssistantIOHelper(_boxName);
+    var ioHelper = AssistantIOHelper<JobApplicationInfo>(_jobsBoxName);
     final JobApplicationInfo info = ioHelper.getAt(index);
 
     return AppInfoTile(
@@ -106,8 +118,8 @@ class JobApplicationsPage extends StatelessWidget {
         actions: <Widget>[
           FlatButton(
             child: Text('Yes'),
-            onPressed: () {
-              _removeAppInfo(index);
+            onPressed: () async {
+              await _removeAppInfo(index);
               Navigator.of(context).pop();
             },
           ),
@@ -123,22 +135,33 @@ class JobApplicationsPage extends StatelessWidget {
   }
 
   Future<void> _removeAppInfo(int index) async {
-    AssistantIOHelper helper = AssistantIOHelper(_boxName);
-    helper.deleteAt(index);
+    var helper = AssistantIOHelper<JobApplicationInfo>(_jobsBoxName);
+    await helper.deleteAt(index);
   }
 
   void _pushAddAppInfo(BuildContext context) {
     Navigator.push(context,
         MaterialPageRoute<void>(builder: (BuildContext context) {
           return CUAppInfoPage(
-              _boxName, _locale, AssistantIOHelper.invalidIndex);
+              _jobsBoxName, _locale, AssistantIOHelper.invalidIndex);
     }));
   }
 
   void _pushEditAppInfo(BuildContext context, int index) {
     Navigator.push(context,
         MaterialPageRoute<void>(builder: (BuildContext context) {
-          return CUAppInfoPage(_boxName, _locale, index);
+          return CUAppInfoPage(_jobsBoxName, _locale, index);
     }));
+  }
+
+  _showSettings(BuildContext context) {
+    Navigator.push(context,
+        MaterialPageRoute<void>(builder: (BuildContext context) {
+          return SettingsPage(
+            locale: _locale,
+            notificationManager: _notificationManager,
+            settingsBoxName: _settingsBoxName,
+          );
+        }));
   }
 }

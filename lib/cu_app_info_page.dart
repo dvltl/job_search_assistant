@@ -1,6 +1,7 @@
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:job_search_assistant/models/job_application_info.dart';
 import 'package:job_search_assistant/utils/assistant_io_helper.dart';
 import 'package:job_search_assistant/utils/info_helper.dart';
 import 'package:job_search_assistant/utils/source_view.dart';
@@ -47,7 +48,7 @@ class CUAppInfoPageState extends State<CUAppInfoPage> {
         decoration: InputDecoration(labelText: fieldName),
         initialValue: initialVal,
         resetIcon: Icon(Icons.clear),
-        onShowPicker: (context, currentValue) async {
+        onShowPicker: (context, currentValue) {
           return showDatePicker(
               context: context,
               initialDate: currentValue ?? DateTime.now(),
@@ -179,7 +180,7 @@ class CUAppInfoPageState extends State<CUAppInfoPage> {
     Map<String, Object> infoMap;
 
     if (_index != AssistantIOHelper.invalidIndex) {
-      AssistantIOHelper ioHelper = AssistantIOHelper(_boxName);
+      var ioHelper = AssistantIOHelper<JobApplicationInfo>(_boxName);
       infoMap = JobAppInfoHelper.asMap(ioHelper.getAt(_index));
     }
 
@@ -249,13 +250,13 @@ class CUAppInfoPageState extends State<CUAppInfoPage> {
         if (formKey.currentState.validate()) {
           formKey.currentState.save();
 
-          AssistantIOHelper ioHelper = AssistantIOHelper(_boxName);
+          var ioHelper = AssistantIOHelper<JobApplicationInfo>(_boxName);
           var info = JobAppInfoHelper.fromMap(_newInfo);
 
           if (_index != AssistantIOHelper.invalidIndex) {
-            ioHelper.updateInfo(info, _index);
+            ioHelper.updateElem(info, _index);
           } else {
-            ioHelper.addInfo(info);
+            ioHelper.addElem(info);
           }
           Navigator.pop(context);
         }
