@@ -65,10 +65,11 @@ class AssistantState extends State<Assistant> {
                   widget.settingsBoxName, _locale, _notificationManager);
           } else
             return Scaffold(
-                body: Column(
-                  children: <Widget>[
-                    Center(child: CircularProgressIndicator(),)
-                  ],
+                appBar: AppBar(
+                  title: Text('Current Job Applications'),
+                ),
+                body: Center(
+                    child: CircularProgressIndicator()
                 )
             );
         },
